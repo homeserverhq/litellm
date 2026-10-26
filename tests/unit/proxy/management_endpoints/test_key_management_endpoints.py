@@ -16299,8 +16299,11 @@ async def test_ghsa_q775_ui_session_token_team_key_exempt_from_budget_ceiling():
         max_budget=0.25,
     )
 
+    mock_prisma_client = AsyncMock()
+    mock_prisma_client.insert_data = AsyncMock(return_value=MagicMock(token="sk-generated", models=[]))
+
     with (
-        patch("litellm.proxy.proxy_server.prisma_client", AsyncMock()),
+        patch("litellm.proxy.proxy_server.prisma_client", mock_prisma_client),
         patch("litellm.proxy.proxy_server.user_api_key_cache", MagicMock()),
         patch("litellm.proxy.proxy_server.llm_router", None),
         patch("litellm.proxy.proxy_server.premium_user", False),

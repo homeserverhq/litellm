@@ -9,6 +9,7 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, ClassVar, Final, Literal, Optional, cast, get_args
 
 import httpx
+from pydantic import TypeAdapter
 
 from litellm._internal_context import with_service_target
 from litellm._logging import verbose_logger
@@ -216,6 +217,60 @@ def _request_is_streaming(data: object, event_type: GuardrailEventHooks | None =
         data.get("stream") is True
         or data.get(SERVER_STREAMING_CLASSIFICATION_KEY) is SERVER_STREAMING_CLASSIFICATION_MARKER
     )
+
+
+_REQUEST_DATA_ADAPTER: Final = TypeAdapter(dict[str, object])
+_PROXY_REQUEST_ADAPTER: Final = TypeAdapter(Mapping[str, object])
+_EMPTY_MAPPING: Final[Mapping[str, object]] = MappingProxyType({})
+
+
+def _should_run_if_mode_by_tag(
+    data: object,
+    event_hook: Mode | None,
+    event_type: GuardrailEventHooks | None = None,
+) -> bool | None:
+    if not isinstance(event_hook, Mode):
+        return None
+
+    from litellm.proxy.proxy_server import premium_user
+
+    if not premium_user:
+        raise PermissionError("Setting tag-based guardrails requires a premium user")
+
+    from litellm.litellm_core_utils.litellm_logging import StandardLoggingPayloadSetup
+    from litellm.router_strategy.tag_based_routing import without_baggage_mapped_tags
+
+    request_data: Final = _REQUEST_DATA_ADAPTER.validate_python(data)
+    proxy_request_value: Final = request_data.get("proxy_server_request")
+    proxy_server_request: Final = (
+        _PROXY_REQUEST_ADAPTER.validate_python(proxy_request_value)
+        if isinstance(proxy_request_value, Mapping)
+        else _EMPTY_MAPPING
+    )
+    request_tags: Final = without_baggage_mapped_tags(
+        StandardLoggingPayloadSetup.get_request_tags(
+            litellm_params=request_data,
+            proxy_server_request=proxy_server_request,
+        ),
+        request_data.get(get_metadata_variable_name_from_kwargs(request_data)),
+        keep_serving_deployment_tags=True,
+    )
+    matched_mode: Final = next(
+        (event_hook.tags[tag] for tag in (request_tags or ()) if tag in event_hook.tags),
+        None,
+    )
+    if matched_mode is not None:
+        if event_type is None:
+            return True
+        if isinstance(matched_mode, list):
+            return event_type.value in matched_mode
+        return event_type.value == matched_mode
+    if event_hook.default is not None:
+        if event_type is None:
+            return False
+        default_modes: Final = event_hook.default if isinstance(event_hook.default, list) else [event_hook.default]
+        return event_type.value in default_modes
+    return False
 
 
 class CustomGuardrail(CustomLogger):
@@ -1215,16 +1270,10 @@ class CustomGuardrail(CustomLogger):
         if self.default_on is True and disable_global_guardrail is not True:
             if self._event_hook_is_event_type(event_type):
                 if isinstance(self.event_hook, Mode):
-                    try:
-                        from litellm_enterprise.integrations.custom_guardrail import (
-                            EnterpriseCustomGuardrailHelper,
-                        )
-                    except ImportError:
-                        raise ImportError(
-                            "Setting tag-based guardrails is only available in litellm-enterprise. You must be a premium user to use this feature."
-                        )
-                    result = EnterpriseCustomGuardrailHelper._should_run_if_mode_by_tag(
-                        data, self.event_hook, event_type
+                    result = _should_run_if_mode_by_tag(
+                        cast(object, data),  # cast-ok: data param
+                        self.event_hook,
+                        event_type,
                     )
                     if result is not None:
                         tagged_result: Final[bool] = bool(cast(object, result))  # cast-ok: helper return
@@ -1244,15 +1293,7 @@ class CustomGuardrail(CustomLogger):
             return False
 
         if isinstance(self.event_hook, Mode):
-            try:
-                from litellm_enterprise.integrations.custom_guardrail import (
-                    EnterpriseCustomGuardrailHelper,
-                )
-            except ImportError:
-                raise ImportError(
-                    "Setting tag-based guardrails is only available in litellm-enterprise. You must be a premium user to use this feature."
-                )
-            result = EnterpriseCustomGuardrailHelper._should_run_if_mode_by_tag(data, self.event_hook, event_type)
+            result = _should_run_if_mode_by_tag(cast(object, data), self.event_hook, event_type)  # cast-ok: data param
             if result is not None:
                 mode_tag_result: Final[bool] = bool(cast(object, result))  # cast-ok: helper return
                 return mode_tag_result and self.stream_scope_allows(cast(object, data), event_type)  # cast-ok: data
