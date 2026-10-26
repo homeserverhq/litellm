@@ -1050,8 +1050,8 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
-    runs-on: ubuntu-latest-16-cores
-    timeout-minutes: 20
+    runs-on: ${{ (github.event.repository.fork && 'ubuntu-latest') || 'ubuntu-latest-16-cores' }}
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: ui/litellm-dashboard
@@ -1099,7 +1099,11 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          full_suite() { npm run test -- --run --pool forks --maxWorkers=14; }
+          max_workers=$(nproc)
+          if [ "$max_workers" -gt 14 ]; then
+            max_workers=14
+          fi
+          full_suite() { npm run test -- --run --pool forks --maxWorkers="$max_workers"; }
 
           if [ -z "$BASE_SHA" ]; then
             echo "Push to $GITHUB_REF_NAME: running the full suite"
@@ -1128,7 +1132,7 @@ jobs:
 
           echo "Pull request: running tests related to ${#changed_files[@]} changed UI files"
           npm run test -- related "${changed_files[@]}" --run --passWithNoTests \
-            --pool forks --maxWorkers=14
+            --pool forks --maxWorkers="$max_workers"
   docs:
     name: docs
     permissions:
