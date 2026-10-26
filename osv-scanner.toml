@@ -6,17 +6,17 @@ reason = "diskcache has no fixed release published; remove this entry once one e
 [[IgnoredVulns]]
 id = "GHSA-v4x8-3wr5-3wq8"
 ignoreUntil = 2026-11-20
-reason = "the only fixed filelock is 4.2.1, a new major that requires Python >= 3.11 while litellm still supports 3.10, and the advisory is in ReadWriteLock, which litellm never uses (only FileLock); bump filelock and remove this entry once 3.10 is dropped or a 3.x fix ships"
+reason = "the lock's Python 3.10 resolution stays on filelock 3.32.7 because the only fix, 4.2.1, is a new major that requires Python >= 3.11, and this advisory is in ReadWriteLock, which litellm never uses (only FileLock); Python 3.11+ resolves 4.2.4 via the uv overrides, so remove this once 3.10 is dropped"
 
 [[IgnoredVulns]]
-id = "GHSA-vfj7-8cjw-p6xm"
-ignoreUntil = 2026-11-03
-reason = "braces has no fixed release published (3.0.3, 2024-05-21, is latest and last_affected); dev-only via knip > fast-glob > micromatch; remove this entry once one exists"
+id = "GHSA-567q-5qvw-pf92"
+ignoreUntil = 2026-11-20
+reason = "Windows-only soft locks, including a FileLock that fell back to a soft lock, while litellm's CLI uses FileLock on local per-user paths where the OS lock primitive is available; the Python 3.10 resolution cannot take the 4.2.1 fix because it requires Python >= 3.11, and Python 3.11+ resolves 4.2.4 via the uv overrides"
 
 [[IgnoredVulns]]
-id = "GHSA-6q48-6c7w-9gw2"
-ignoreUntil = 2026-10-23
-reason = "certifi 2026.10.19 (published 2026-10-20) is inside the 3-day uv exclude-newer window until 2026-10-23 02:24 UTC; bump certifi and remove this entry once it clears"
+id = "GHSA-9vhv-jxww-xfm5"
+ignoreUntil = 2026-11-20
+reason = "ReadWriteLock and AsyncReadWriteLock only, which litellm never uses; the Python 3.10 resolution cannot take the 4.2.1 fix because it requires Python >= 3.11, and Python 3.11+ resolves 4.2.4 via the uv overrides"
 
 [[PackageOverrides]]
 name = "pillow"

@@ -363,6 +363,10 @@ override-dependencies = [
     "packaging>=24.0",
     "cryptography>=50.0.0,<51.0",
     "mcp>=2.3.0,<3",
+    # filelock 4.2.1 fixes three advisories but needs Python >= 3.11, so keep
+    # the 3.10 resolution on the 3.x line and let 3.11+ take the fix.
+    "filelock>=4.2.1,<5.0; python_version >= '3.11'",
+    "filelock>=3.16.1,<4.0; python_version < '3.11'",
 ]
 default-groups = ["dev"]
 required-version = ">=0.10.9"
