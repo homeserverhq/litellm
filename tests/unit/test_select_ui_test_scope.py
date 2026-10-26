@@ -88,7 +88,12 @@ def _stub(bin_dir: Path, name: str, body: str) -> None:
     stub.chmod(0o755)
 
 
-def _run_step(tmp_path: Path, changed: list[str], base_sha: str = "basesha") -> tuple[int, str, list[list[str]]]:
+def _run_step(
+    tmp_path: Path,
+    changed: list[str],
+    base_sha: str = "basesha",
+    nproc: int = 16,
+) -> tuple[int, str, list[list[str]]]:
     """Run the workflow step's real shell; return its status, stdout and every npm argv."""
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
@@ -98,6 +103,7 @@ def _run_step(tmp_path: Path, changed: list[str], base_sha: str = "basesha") -> 
 
     _stub(bin_dir, "gh", 'echo "mergebasesha"')
     _stub(bin_dir, "git", 'if [ "$1" = diff ]; then cat "$CHANGED_FILES"; fi')
+    _stub(bin_dir, "nproc", f'echo "{nproc}"')
     _stub(bin_dir, "npm", 'printf "%s\\n" "$@" >>"$NPM_LOG"; printf "\\0" >>"$NPM_LOG"')
 
     step = tmp_path / "step.sh"
@@ -158,6 +164,32 @@ def test_step_runs_the_full_suite_on_a_push(tmp_path: Path) -> None:
     returncode, output, invocations = _run_step(tmp_path, ["src/app/page.tsx"], base_sha="")
     assert returncode == 0, output
     assert invocations == [FULL_SUITE_ARGV]
+
+
+def test_step_scales_related_workers_to_a_small_runner(tmp_path: Path) -> None:
+    changed = ["src/app/page.tsx", "src/lib/http/client.ts"]
+    returncode, output, invocations = _run_step(tmp_path, changed, nproc=4)
+    assert returncode == 0, output
+    assert invocations == [
+        [
+            "run",
+            "test",
+            "--",
+            "related",
+            *changed,
+            "--run",
+            "--passWithNoTests",
+            "--pool",
+            "forks",
+            "--maxWorkers=4",
+        ]
+    ]
+
+
+def test_step_scales_full_suite_workers_to_a_small_runner(tmp_path: Path) -> None:
+    returncode, output, invocations = _run_step(tmp_path, ["src/app/page.tsx"], base_sha="", nproc=4)
+    assert returncode == 0, output
+    assert invocations == [["run", "test", "--", "--run", "--pool", "forks", "--maxWorkers=4"]]
 
 
 def test_step_runs_nothing_when_the_pull_request_touches_no_dashboard_file(tmp_path: Path) -> None:
