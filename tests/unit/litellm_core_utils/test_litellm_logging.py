@@ -10,10 +10,9 @@ import sys
 import threading
 import time
 import traceback
-from collections.abc import AsyncIterator, Callable, Iterator, Mapping, Sequence
+from collections.abc import AsyncIterator, Callable, Iterator, Mapping
 from datetime import datetime as datetime_standard_logging, datetime as datetime_unit_test, datetime as dt_object
-from importlib.machinery import ModuleSpec
-from types import MappingProxyType, ModuleType
+from types import MappingProxyType
 from typing import Final, Literal
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -11456,146 +11455,6 @@ def test_uncached_price_keeps_an_earlier_price_failure(pr44187_priced_model: str
     assert logging_obj.model_call_details["response_cost_failure_debug_information"] == earlier_failure
 
 
-def test_enterprise_alerting_loggers_resolves_real_classes():
-    from litellm_enterprise.enterprise_callbacks.pagerduty.pagerduty import PagerDutyAlerting
-    from litellm_enterprise.enterprise_callbacks.send_emails.resend_email import ResendEmailLogger
-    from litellm_enterprise.enterprise_callbacks.send_emails.sendgrid_email import SendGridEmailLogger
-    from litellm_enterprise.enterprise_callbacks.send_emails.smtp_email import SMTPEmailLogger
-    from litellm.litellm_core_utils import litellm_logging as logging_module
-
-    logging_module._enterprise_alerting_loggers.cache_clear()
-    try:
-        loggers = logging_module._enterprise_alerting_loggers()
-        assert loggers.pagerduty is PagerDutyAlerting
-        assert loggers.resend_email is ResendEmailLogger
-        assert loggers.sendgrid_email is SendGridEmailLogger
-        assert loggers.smtp_email is SMTPEmailLogger
-    finally:
-        logging_module._enterprise_alerting_loggers.cache_clear()
-
-
-def test_enterprise_alerting_loggers_falls_back_without_disabling_callback_controls(
-    monkeypatch,
-):
-    from litellm_enterprise.enterprise_callbacks.callback_controls import (
-        EnterpriseCallbackControls,
-    )
-    from litellm.integrations.custom_logger import CustomLogger
-    from litellm.litellm_core_utils import litellm_logging as logging_module
-
-    class BlockPagerDutyFinder(importlib.abc.MetaPathFinder):
-        def find_spec(
-            self,
-            fullname: str,
-            path: Sequence[str] | None = None,
-            target: ModuleType | None = None,
-        ) -> ModuleSpec | None:
-            if fullname == "litellm_enterprise.enterprise_callbacks.pagerduty.pagerduty":
-                raise ImportError("blocked pagerduty import")
-            return None
-
-    module_prefixes: Final = (
-        "litellm_enterprise.enterprise_callbacks.pagerduty",
-        "litellm_enterprise.enterprise_callbacks.send_emails",
-    )
-    logging_module._enterprise_alerting_loggers.cache_clear()
-    for module_name in tuple(sys.modules):
-        if any(module_name == prefix or module_name.startswith(f"{prefix}.") for prefix in module_prefixes):
-            monkeypatch.delitem(sys.modules, module_name, raising=False)
-    monkeypatch.setattr(sys, "meta_path", [BlockPagerDutyFinder(), *sys.meta_path])
-
-    try:
-        loggers = logging_module._enterprise_alerting_loggers()
-        assert loggers.pagerduty is CustomLogger
-        assert loggers.resend_email is CustomLogger
-        assert loggers.sendgrid_email is CustomLogger
-        assert loggers.smtp_email is CustomLogger
-        assert logging_module.EnterpriseCallbackControls is EnterpriseCallbackControls
-    finally:
-        logging_module._enterprise_alerting_loggers.cache_clear()
-
-
-@pytest.mark.parametrize("integration", ("smtp_email", "resend_email", "sendgrid_email"))
-def test_init_email_alerting_logger_reuses_instance(
-    integration: Literal["smtp_email", "resend_email", "sendgrid_email"],
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    from litellm.litellm_core_utils import litellm_logging as logging_module
-    from litellm_enterprise.enterprise_callbacks.send_emails.resend_email import ResendEmailLogger
-    from litellm_enterprise.enterprise_callbacks.send_emails.sendgrid_email import SendGridEmailLogger
-    from litellm_enterprise.enterprise_callbacks.send_emails.smtp_email import SMTPEmailLogger
-
-    logger_class: Final = (
-        SMTPEmailLogger
-        if integration == "smtp_email"
-        else ResendEmailLogger
-        if integration == "resend_email"
-        else SendGridEmailLogger
-    )
-    monkeypatch.setenv("RESEND_API_KEY", "test-resend-key")
-    monkeypatch.setenv("SENDGRID_API_KEY", "test-sendgrid-key")
-    logging_module._in_memory_loggers.clear()
-    try:
-        logger = logging_module._init_custom_logger_compatible_class(
-            logging_integration=integration,
-            internal_usage_cache=None,
-            llm_router=None,
-            custom_logger_init_args={},
-        )
-        assert isinstance(logger, logger_class)
-        assert (
-            logging_module._init_custom_logger_compatible_class(
-                logging_integration=integration,
-                internal_usage_cache=None,
-                llm_router=None,
-                custom_logger_init_args={},
-            )
-            is logger
-        )
-        assert logging_module.get_custom_logger_compatible_class(integration) is logger
-    finally:
-        logging_module._in_memory_loggers.clear()
-
-
-def test_init_pagerduty_logger_reuses_instance(monkeypatch):
-    from litellm.types.integrations.pagerduty import AlertingConfig
-    from litellm_enterprise.enterprise_callbacks.pagerduty.pagerduty import PagerDutyAlerting
-    from litellm.litellm_core_utils import litellm_logging as logging_module
-
-    monkeypatch.setenv("PAGERDUTY_API_KEY", "test-pagerduty-key")
-    logging_module._in_memory_loggers.clear()
-    try:
-        logger = logging_module._init_custom_logger_compatible_class(
-            logging_integration="pagerduty",
-            internal_usage_cache=None,
-            llm_router=None,
-            custom_logger_init_args={
-                "alerting_args": AlertingConfig(
-                    failure_threshold=1,
-                    failure_threshold_window_seconds=10,
-                )
-            },
-        )
-        assert isinstance(logger, PagerDutyAlerting)
-        assert (
-            logging_module._init_custom_logger_compatible_class(
-                logging_integration="pagerduty",
-                internal_usage_cache=None,
-                llm_router=None,
-                custom_logger_init_args={
-                    "alerting_args": AlertingConfig(
-                        failure_threshold=1,
-                        failure_threshold_window_seconds=10,
-                    )
-                },
-            )
-            is logger
-        )
-        assert logging_module.get_custom_logger_compatible_class("pagerduty") is logger
-    finally:
-        logging_module._in_memory_loggers.clear()
-
-
 @pytest.mark.parametrize("integration", ("smtp_email", "pagerduty", "resend_email", "sendgrid_email"))
 def test_get_custom_logger_compatible_class_does_not_match_generic_api_logger(
     integration: Literal["smtp_email", "pagerduty", "resend_email", "sendgrid_email"],
@@ -13023,16 +12882,6 @@ def test_litellm_logging_no_log_param(monkeypatch, disable_no_log_param):
         event_hook="success_handler",
     )
     assert should_run_proxy_callback is True
-
-    from litellm_enterprise.proxy.hooks.managed_files import PROXY_LiteLLMManagedFiles
-
-    managed_files_callback = PROXY_LiteLLMManagedFiles(DualCache(), prisma_client=MagicMock())
-    should_run_managed_files_callback = litellm_logging_obj.should_run_callback(
-        callback=managed_files_callback,
-        litellm_params={"no-log": True},
-        event_hook="success_handler",
-    )
-    assert should_run_managed_files_callback is True
 
 
 @pytest.mark.usefixtures("_vcr_outcome_gate", "drain_logging_worker", "isolate_litellm_state", "setup_and_teardown")

@@ -284,16 +284,6 @@ commands:
             done
             echo "fake OpenAI endpoint did not become ready" >&2
             exit 1
-  setup_litellm_enterprise_pip:
-    steps:
-      - run:
-          name: "Install local version of litellm-enterprise"
-          command: |
-            # litellm-enterprise is a uv workspace member and is already installed
-            # by the main `uv sync --all-groups --all-extras`.  Do NOT run
-            # `uv sync --package litellm-enterprise` here — that overwrites the
-            # shared .venv and strips out dev/test deps (pytest, prisma, etc.).
-            uv run --no-sync python -c "import litellm_enterprise; print('litellm-enterprise OK:', litellm_enterprise.__file__)"
   install_windows_toolchain:
     steps:
       - run:
@@ -358,7 +348,6 @@ commands:
           name: Install Dependencies
           command: |
             uv sync --frozen --all-groups --all-extras --python 3.12
-      - setup_litellm_enterprise_pip
       - save_cache:
           paths:
             - ~/.cache/uv
@@ -1421,8 +1410,8 @@ jobs:
           command: |
             [[ "$ROUTING_PARITY_BASE" =~ ^[0-9a-f]{40}$ ]] || exit 1
             git fetch --depth 1 origin "$ROUTING_PARITY_BASE"
-            git rm -r -f --quiet litellm enterprise litellm-proxy-extras
-            git checkout "$ROUTING_PARITY_BASE" -- litellm enterprise litellm-proxy-extras
+            git rm -r -f --quiet litellm litellm-proxy-extras
+            git checkout "$ROUTING_PARITY_BASE" -- litellm litellm-proxy-extras
             git reset --quiet
             test -f litellm/rust_bridge/_native.abi3.so
       - start_postgres:
@@ -1445,8 +1434,8 @@ jobs:
       - run:
           name: Check out head product code
           command: |
-            git rm -r -f --quiet litellm enterprise litellm-proxy-extras
-            git checkout "$CIRCLE_SHA1" -- litellm enterprise litellm-proxy-extras
+            git rm -r -f --quiet litellm litellm-proxy-extras
+            git checkout "$CIRCLE_SHA1" -- litellm litellm-proxy-extras
             git reset --quiet
             test -f litellm/rust_bridge/_native.abi3.so
       - start_postgres:

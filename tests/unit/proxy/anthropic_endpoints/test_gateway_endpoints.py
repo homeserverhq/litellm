@@ -877,8 +877,6 @@ def test_gateway_model_discovery_disabled(monkeypatch: pytest.MonkeyPatch, setti
 @pytest.mark.asyncio
 @pytest.mark.parametrize("route", ["/models", "/v1/models", "/claude_code_gateway/v1/models"])
 async def test_gateway_model_discovery_preserves_route_exemptions(monkeypatch: pytest.MonkeyPatch, route: str) -> None:
-    from litellm_enterprise.proxy.auth.route_checks import EnterpriseRouteChecks
-
     import litellm
     from litellm.proxy._types import LiteLLM_TeamTable, UserAPIKeyAuth
     from litellm.proxy.auth.auth_checks import common_checks
@@ -901,7 +899,3 @@ async def test_gateway_model_discovery_preserves_route_exemptions(monkeypatch: p
     assert result is True
     assert RouteChecks.is_unbilled_route(route)
     assert RouteChecks.is_llm_api_route(route)
-    monkeypatch.setenv("DISABLE_LLM_API_ENDPOINTS", "true")
-    monkeypatch.setenv("DISABLE_ADMIN_ENDPOINTS", "true")
-    monkeypatch.setattr("litellm.proxy.proxy_server.premium_user", True)
-    EnterpriseRouteChecks.should_call_route(route)

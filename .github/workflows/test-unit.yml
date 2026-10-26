@@ -155,17 +155,6 @@ jobs:
               tests/unit/router_strategy
               tests/unit/router_utils
               tests/unit/proxy/common_utils/test_cache_aware_routing.py
-              tests/unit/enterprise/enterprise_callbacks/send_emails
-              tests/unit/enterprise/proxy/test_afile_retrieve_returns_unified_id.py
-              tests/unit/enterprise/proxy/test_batch_retrieve_input_file_id.py
-              tests/unit/enterprise/proxy/test_batch_retrieve_registers_missing_output_file_id.py
-              tests/unit/enterprise/proxy/test_batch_retrieve_returns_unified_input_file_id.py
-              tests/unit/enterprise/proxy/test_batch_update_db_managed_output_file_id.py
-              tests/unit/enterprise/proxy/test_deleted_file_returns_403_not_404.py
-              tests/unit/enterprise/proxy/test_enterprise_routes.py
-              tests/unit/enterprise/proxy/test_file_deletion_blocking.py
-              tests/unit/enterprise/proxy/test_managed_files_access_check.py
-              tests/unit/enterprise/proxy/test_managed_files_hook.py
             python-version: "3.12"
             workers: 4
             reruns: 2
@@ -458,10 +447,6 @@ jobs:
 
           - shard: enterprise-repositories-secrets
             test-path: >-
-              tests/unit/enterprise/enterprise_callbacks/test_callback_controls.py
-              tests/unit/enterprise/enterprise_callbacks/test_llm_guard.py
-              tests/unit/enterprise/enterprise_callbacks/test_pagerduty_alerting.py
-              tests/unit/enterprise/enterprise_callbacks/test_secret_detection.py
               tests/unit/integration_support
               tests/unit/models
               tests/unit/repositories
@@ -606,8 +591,6 @@ jobs:
               tests/unit/proxy/experimental
               tests/unit/proxy/common_utils
               --ignore=tests/unit/proxy/common_utils/test_cache_aware_routing.py
-              --ignore=tests/unit/proxy/common_utils/test_check_batch_cost.py
-              --ignore=tests/unit/proxy/common_utils/test_check_responses_cost.py
               --ignore=tests/unit/proxy/common_utils/test_proxy_encrypt_decrypt.py
               --ignore=tests/unit/proxy/common_utils/test_realtime_cache.py
               tests/unit/proxy/enterprise_billing
@@ -640,7 +623,6 @@ jobs:
               --ignore=tests/unit/proxy/test_prompt_test_endpoint.py
               --ignore=tests/unit/proxy/test_proxy_config_unit_test.py
               --ignore=tests/unit/proxy/test_proxy_custom_auth.py
-              --ignore=tests/unit/proxy/test_proxy_reject_logging.py
               --ignore=tests/unit/proxy/test_proxy_server.py
               --ignore=tests/unit/proxy/test_proxy_setting_guardrails.py
               --ignore=tests/unit/proxy/test_proxy_token_counter.py
@@ -679,32 +661,6 @@ jobs:
             timeout-minutes: 20
             job-timeout-minutes: 60
             dist: loadscope
-
-          - shard: enterprise-package
-            test-path: |-
-              tests/unit/enterprise/integrations
-              tests/unit/enterprise/proxy/auth
-              tests/unit/enterprise/proxy/guardrails
-              tests/unit/enterprise/proxy/management_endpoints
-              tests/unit/enterprise/proxy/test_audit_logging_endpoints.py
-              tests/unit/enterprise/proxy/test_liteadmin.py
-              tests/unit/enterprise/enterprise_callbacks/test_prometheus_logging_callbacks.py
-            python-version: "3.12"
-            workers: 4
-            reruns: 0
-            timeout-minutes: 20
-            job-timeout-minutes: 60
-            dist: loadscope
-
-          - shard: enterprise-managed-files
-            test-path: >-
-              tests/unit/enterprise/proxy/hooks
-            python-version: "3.12"
-            workers: 4
-            reruns: 0
-            timeout-minutes: 20
-            job-timeout-minutes: 60
-            dist: load
 
           - shard: responses-caching-types
             test-path: |-
@@ -864,7 +820,6 @@ jobs:
             test-path: |-
               tests/unit/proxy/management_helpers/test_audit_logs_proxy.py
               tests/unit/proxy/spend_tracking/test_search_api_logging.py
-              tests/unit/proxy/test_proxy_reject_logging.py
             python-version: "3.12"
             workers: 4
             reruns: 2
@@ -917,8 +872,6 @@ jobs:
               tests/unit/proxy/test_proxy_server_exception_mapping.py
               tests/unit/proxy/lens
               tests/unit/proxy/auth/test_models_fallback_endpoint.py
-              tests/unit/proxy/common_utils/test_check_batch_cost.py
-              tests/unit/proxy/common_utils/test_check_responses_cost.py
               tests/unit/proxy/common_utils/test_realtime_cache.py
               tests/unit/proxy/google_endpoints/test_gemini_agents_endpoints.py
               tests/unit/proxy/google_endpoints/test_google_endpoint_routing.py
@@ -1071,7 +1024,7 @@ jobs:
             --timeout="${TEST_TIMEOUT_SECONDS}" \
             --rerun-except "from pytest-timeout" \
             --durations=20 \
-            --cov=./litellm --cov=./enterprise/litellm_enterprise \
+            --cov=./litellm \
             --cov-report=xml:coverage.xml \
             --cov-config=pyproject.toml
           status=$?

@@ -92,16 +92,6 @@ PROXY_CLASS_NAME_ALIAS_CASES: Final = (
         "_ProxyDBLogger",
         "ProxyDBLogger",
     ),
-    (
-        "enterprise.litellm_enterprise.proxy.hooks.managed_files",
-        "_PROXY_LiteLLMManagedFiles",
-        "PROXY_LiteLLMManagedFiles",
-    ),
-    (
-        "enterprise.litellm_enterprise.proxy.hooks.managed_vector_stores",
-        "_PROXY_LiteLLMManagedVectorStores",
-        "PROXY_LiteLLMManagedVectorStores",
-    ),
 )
 
 PACKAGE_EXPORT_ALIAS_CASES: Final = (
@@ -1139,48 +1129,6 @@ MODULE_IMPORT_ALIAS_CASES: Final = (
 )
 
 ALIAS_CASES: Final = (
-    (
-        "enterprise.enterprise_hooks.banned_keywords",
-        "",
-        "_ENTERPRISE_BannedKeywords",
-        "ENTERPRISE_BannedKeywords",
-        False,
-    ),
-    (
-        "enterprise.enterprise_hooks.blocked_user_list",
-        "",
-        "_ENTERPRISE_BlockedUserList",
-        "ENTERPRISE_BlockedUserList",
-        False,
-    ),
-    (
-        "enterprise.enterprise_hooks.google_text_moderation",
-        "",
-        "_ENTERPRISE_GoogleTextModeration",
-        "ENTERPRISE_GoogleTextModeration",
-        False,
-    ),
-    (
-        "enterprise.enterprise_hooks.openai_moderation",
-        "",
-        "_ENTERPRISE_OpenAI_Moderation",
-        "ENTERPRISE_OpenAI_Moderation",
-        False,
-    ),
-    (
-        "enterprise.litellm_enterprise.proxy.hooks.managed_files",
-        "",
-        "_PROXY_LiteLLMManagedFiles",
-        "PROXY_LiteLLMManagedFiles",
-        False,
-    ),
-    (
-        "enterprise.litellm_enterprise.proxy.hooks.managed_vector_stores",
-        "",
-        "_PROXY_LiteLLMManagedVectorStores",
-        "PROXY_LiteLLMManagedVectorStores",
-        False,
-    ),
     ("litellm", "", "_calculate_retry_after", "calculate_retry_after", False),
     ("litellm", "", "_turn_on_debug", "turn_on_debug", False),
     ("litellm", "", "_turn_on_json", "turn_on_json", False),
@@ -1692,13 +1640,6 @@ ALIAS_CASES: Final = (
         "CustomStreamWrapper",
         "_strip_sse_data_from_chunk",
         "strip_sse_data_from_chunk",
-        False,
-    ),
-    (
-        "litellm.proxy.enterprise.litellm_enterprise.proxy.utils",
-        "",
-        "_should_block_robots",
-        "should_block_robots",
         False,
     ),
     ("litellm.realtime_api.main", "", "_realtime_health_check", "realtime_health_check", False),

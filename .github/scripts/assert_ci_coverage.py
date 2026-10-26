@@ -39,9 +39,6 @@ DEDICATED_INTEGRATION_WORKFLOWS: Final = MappingProxyType({"image-scan.yml": "te
 # itself decomposed one level deeper and is checked through its own entry.
 SHARDED_ROOTS: tuple[str, ...] = (
     "tests/unit",
-    "tests/unit/enterprise",
-    "tests/unit/enterprise/enterprise_callbacks",
-    "tests/unit/enterprise/proxy",
     "tests/unit/llms",
     "tests/unit/proxy",
     "tests/unit/proxy/_experimental",

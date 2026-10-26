@@ -36,7 +36,6 @@ PROXY_SERVER_ONLY_DEPENDENCIES: Final = frozenset(
         "cryptography",
         "apscheduler",
         "rq",
-        "litellm-enterprise",
         "litellm-proxy-extras",
     }
 )

@@ -120,8 +120,8 @@ jobs:
       - name: Install every extra and dependency group
         run: .github/scripts/uv_sync_with_retries.sh --frozen --all-groups --all-extras --python ${{ matrix.python-version }}
 
-      - name: Import the SDK, the proxy server and the enterprise package
-        run: .venv/bin/python -c "import litellm, litellm.proxy.proxy_server, litellm_enterprise"
+      - name: Import the SDK and the proxy server
+        run: .venv/bin/python -c "import litellm, litellm.proxy.proxy_server"
 
   windows-sdk:
     name: windows-sdk

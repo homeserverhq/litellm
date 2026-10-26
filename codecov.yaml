@@ -29,8 +29,6 @@ flag_management:
       carryforward: false
     - name: core-utils
       carryforward: false
-    - name: enterprise-routing
-      carryforward: false
     - name: integrations
       carryforward: false
     - name: llm-vertex-ai
@@ -62,10 +60,6 @@ flag_management:
     - name: caching-local
       carryforward: false
     - name: proxy-extras
-      carryforward: false
-    - name: enterprise-package
-      carryforward: false
-    - name: enterprise-managed-files
       carryforward: false
     - name: responses-caching-types
       carryforward: false
@@ -119,9 +113,6 @@ component_management:
     - component_id: "Proxy_Authentication"
       paths:
         - "*/proxy/auth/**"
-    - component_id: "Enterprise"
-      paths:
-        - "enterprise/**"
     - component_id: "Batches"
       paths:
         - "*/proxy/batches_endpoints/**"
