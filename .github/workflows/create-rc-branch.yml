@@ -11,7 +11,7 @@ permissions: {}
 jobs:
   create-rc-branch:
     name: Create RC Branch
-    if: github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'
+    if: github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -70,6 +70,7 @@ jobs:
   linear-release:
     name: Move the Linear release to rc
     needs: create-rc-branch
+    if: github.event.repository.fork != true
     permissions:
       contents: read
     uses: ./.github/workflows/linear-release.yml

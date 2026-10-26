@@ -22,7 +22,7 @@ permissions: {}
 jobs:
   linear-release:
     name: Linear Release
-    if: github.repository == 'BerriAI/litellm'
+    if: github.event.repository.fork != true && github.repository == 'BerriAI/litellm'
     runs-on: ubuntu-latest
     permissions:
       contents: read

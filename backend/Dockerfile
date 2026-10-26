@@ -66,7 +66,6 @@ ENV UV_PROJECT_ENVIRONMENT=/app/.venv \
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=enterprise/pyproject.toml,target=enterprise/pyproject.toml \
     --mount=type=bind,source=litellm-proxy-extras/pyproject.toml,target=litellm-proxy-extras/pyproject.toml \
     uv sync --frozen --no-install-project --no-install-workspace --no-default-groups --no-editable \
         --extra proxy \
@@ -126,7 +125,6 @@ ENV HOME=/home/nonroot \
 
 COPY --from=builder --chown=nonroot:nonroot /app/.venv /app/.venv
 COPY --from=builder --chown=nonroot:nonroot /app/litellm /app/litellm
-COPY --from=builder --chown=nonroot:nonroot /app/enterprise /app/enterprise
 COPY --from=builder --chown=nonroot:nonroot /app/backend /app/backend
 COPY --from=builder --chown=nonroot:nonroot /app/docker/component_entrypoint.sh /app/docker/component_entrypoint.sh
 COPY --from=builder --chown=nonroot:nonroot /app/schema.prisma /app/schema.prisma

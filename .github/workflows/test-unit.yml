@@ -1469,7 +1469,7 @@ jobs:
             --cov=./litellm --cov-report=xml:coverage.xml
 
       - name: Upload redis-py ${{ matrix.redis-py }} coverage to Codecov
-        if: always() && steps.changes.outputs.decision != 'skip' && matrix.redis-py == '5.3.1'
+        if: always() && steps.changes.outputs.decision != 'skip' && matrix.redis-py == '5.3.1' && github.event.repository.fork != true
         continue-on-error: true
         uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5.5.5
         with:
@@ -1481,7 +1481,7 @@ jobs:
   coverage:
     name: coverage
     needs: unit
-    if: always()
+    if: always() && github.event.repository.fork != true
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

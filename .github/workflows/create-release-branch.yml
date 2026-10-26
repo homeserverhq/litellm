@@ -28,6 +28,7 @@ jobs:
   create-branch:
     name: Create Release Branch
     runs-on: ubuntu-latest
+    if: github.event.repository.fork != true
     permissions:
       contents: write
     steps:

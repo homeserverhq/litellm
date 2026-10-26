@@ -250,6 +250,7 @@ jobs:
           uv run --no-project --with 'pytest==9.0.2' pytest tests/code_coverage_tests/test_no_hardcoded_secrets.py -v
 
       - name: Run ggshield secret scan
+        if: github.event.repository.fork != true
         env:
           GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
         run: |

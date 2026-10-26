@@ -173,6 +173,7 @@ jobs:
           (cd "$RUNNER_TEMP" && "$GITHUB_WORKSPACE/.venv-core-highest/bin/python" -I "$GITHUB_WORKSPACE/tests/base_sdk_tests/check_sdk_http.py")
           uv run --no-project --with coverage==7.14.0 python -m coverage xml --rcfile=/dev/null -o coverage-core.xml
       - name: Upload core packaging coverage
+        if: github.event.repository.fork != true
         uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5.5.5
         with:
           use_oidc: true

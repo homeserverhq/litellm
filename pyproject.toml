@@ -80,7 +80,6 @@ proxy = [
     "httpx2>=2.10.0,<3",
     "pydantic>=2.12.0,<3",
     "litellm-proxy-extras==0.4.111",
-    "litellm-enterprise==0.1.79",
     "RestrictedPython>=8.5,<9.0",
     "rich>=13.9.4,<14.0",
     "InquirerPy>=0.3.4,<1.0",
@@ -332,8 +331,6 @@ include = [
     "litellm/proxy/common_utils/codex_bundled_models_0.159.3.json",
 ]
 exclude = [
-    "litellm/proxy/enterprise",
-    "litellm/proxy/enterprise/**",
     "litellm/proxy/guardrails/guardrail_hooks/litellm_content_filter/guardrail_benchmarks",
     "litellm/proxy/guardrails/guardrail_hooks/litellm_content_filter/guardrail_benchmarks/**",
     "**/__pycache__",
@@ -390,10 +387,9 @@ pypdf = "2026-10-21T17:00:00Z"
 
 [tool.uv.sources]
 litellm-proxy-extras = { workspace = true }
-litellm-enterprise = { workspace = true }
 
 [tool.uv.workspace]
-members = ["enterprise", "litellm-proxy-extras"]
+members = ["litellm-proxy-extras"]
 
 [tool.commitizen]
 version = "1.108.0"

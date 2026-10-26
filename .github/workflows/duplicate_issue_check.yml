@@ -41,7 +41,7 @@ jobs:
         run: bun test scripts/flag-duplicate-issue.test.ts
 
   classify:
-    if: github.event_name != 'pull_request' && github.repository == 'BerriAI/litellm'
+    if: github.event.repository.fork != true && github.event_name != 'pull_request' && github.repository == 'BerriAI/litellm'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -115,7 +115,7 @@ jobs:
 
   flag:
     needs: classify
-    if: needs.classify.outputs.verdict != ''
+    if: github.event.repository.fork != true && needs.classify.outputs.verdict != ''
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

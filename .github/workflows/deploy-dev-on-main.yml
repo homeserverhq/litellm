@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   dispatch:
-    if: github.repository == 'BerriAI/litellm'
+    if: github.event.repository.fork != true && github.repository == 'BerriAI/litellm'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

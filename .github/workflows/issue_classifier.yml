@@ -54,7 +54,8 @@ jobs:
   classify-issue:
     # An edit to a labelled issue is dropped here; the script decides the rest against the live labels
     if: >-
-      github.event_name != 'pull_request'
+      github.event.repository.fork != true
+      && github.event_name != 'pull_request'
       && github.repository == 'BerriAI/litellm'
       && (
         github.event.action != 'edited'
@@ -131,7 +132,7 @@ jobs:
 
   label-issue:
     needs: classify-issue
-    if: needs.classify-issue.outputs.verdict != ''
+    if: github.event.repository.fork != true && needs.classify-issue.outputs.verdict != ''
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

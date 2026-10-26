@@ -22,7 +22,8 @@ jobs:
     # Also reject PRs from branches named after protected branches to
     # prevent pushing directly to main/master.
     if: >-
-      github.event.pull_request.head.repo.full_name == github.repository
+      github.event.repository.fork != true
+      && github.event.pull_request.head.repo.full_name == github.repository
       && github.head_ref != 'main'
       && github.head_ref != 'master'
     steps:

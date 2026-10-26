@@ -74,7 +74,6 @@ ENV UV_PROJECT_ENVIRONMENT=/app/.venv \
 
 # Copy dependency metadata first for layer caching
 COPY pyproject.toml uv.lock ./
-COPY enterprise/pyproject.toml enterprise/
 COPY litellm-proxy-extras/pyproject.toml litellm-proxy-extras/
 
 # Install third-party dependencies (cached unless pyproject.toml/uv.lock change)
@@ -96,9 +95,6 @@ COPY . .
 # would otherwise leave behind alongside the fresh ones.
 RUN rm -rf litellm/proxy/_experimental/out
 COPY --from=ui-builder /ui/out/. litellm/proxy/_experimental/out/
-
-# Build Admin UI before final sync (applies the enterprise color override when present)
-RUN sed -i 's/\r$//' docker/build_admin_ui.sh && chmod +x docker/build_admin_ui.sh && ./docker/build_admin_ui.sh
 
 # Install project and workspace packages (fast - deps already cached)
 RUN uv sync --frozen --no-default-groups --no-editable \
@@ -161,10 +157,6 @@ COPY --from=liteadmin-builder /opt/liteadmin /opt/liteadmin
 COPY --from=builder /app/docker /app/docker
 COPY --from=builder /app/schema.prisma /app/schema.prisma
 COPY --from=builder /app/litellm/proxy/prisma_migration.py /app/litellm/proxy/prisma_migration.py
-# enterprise/ is imported by source path at runtime (proxy_cli puts the
-# working directory on sys.path; litellm/proxy/hooks resolves
-# enterprise.enterprise_hooks from it)
-COPY --from=builder /app/enterprise /app/enterprise
 COPY --from=builder /app/litellm-proxy-extras /app/litellm-proxy-extras
 # Prisma CLI + engines are baked under /opt/prisma, a fixed path every
 # runtime uid can read and that no cache volume mount shadows. The paths are

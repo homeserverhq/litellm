@@ -47,7 +47,7 @@ jobs:
         run: bun test scripts/comment-fixed-issue.test.ts
 
   comment-fixed-issue:
-    if: github.event_name != 'pull_request' && github.repository == 'BerriAI/litellm'
+    if: github.event.repository.fork != true && github.event_name != 'pull_request' && github.repository == 'BerriAI/litellm'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:

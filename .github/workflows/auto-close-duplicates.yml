@@ -43,7 +43,7 @@ jobs:
         run: bun test scripts/auto-close-duplicates.test.ts
 
   sweep:
-    if: github.event_name != 'pull_request' && github.repository == 'BerriAI/litellm'
+    if: github.event.repository.fork != true && github.event_name != 'pull_request' && github.repository == 'BerriAI/litellm'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
