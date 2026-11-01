@@ -39,7 +39,7 @@ concurrency:
 
 jobs:
   benchmarks:
-    if: github.event.repository.fork != true
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     runs-on: ubuntu-24.04
     timeout-minutes: 60
 

@@ -1,6 +1,9 @@
 name: Compat Matrix Image
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     paths:
       - tests/e2e/claude_code/cron_vm/**
@@ -16,6 +19,7 @@ concurrency:
 
 jobs:
   compat-matrix-image:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     name: compat-matrix-image
     runs-on: ubuntu-latest
     timeout-minutes: 15

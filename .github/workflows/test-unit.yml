@@ -19,6 +19,7 @@ concurrency:
 
 jobs:
   rust-bridge:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     name: rust-bridge
     permissions:
       contents: read
@@ -109,6 +110,7 @@ jobs:
           RUN_ATTEMPT: ${{ github.run_attempt }}
         run: echo "name=rust-bridge-${RUN_ID}-${RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
   assert-shard-coverage:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -122,7 +124,7 @@ jobs:
   unit:
     name: ${{ matrix.shard }}
     needs: [rust-bridge, assert-shard-coverage]
-    if: ${{ !cancelled() }}
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm')) && (!cancelled())
     runs-on: ubuntu-latest
     timeout-minutes: ${{ matrix.job-timeout-minutes }}
     permissions:
@@ -1046,6 +1048,7 @@ jobs:
           path: coverage.xml
           retention-days: 1
   ui-unit:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     name: ui-unit
     permissions:
       contents: read
@@ -1134,6 +1137,7 @@ jobs:
           npm run test -- related "${changed_files[@]}" --run --passWithNoTests \
             --pool forks --maxWorkers="$max_workers"
   docs:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     name: docs
     permissions:
       contents: read
@@ -1217,6 +1221,7 @@ jobs:
           uv run --no-sync python ./tests/documentation_tests/test_api_docs.py
           uv run --no-sync python ./tests/documentation_tests/test_circular_imports.py
   helm:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     name: helm
     permissions:
       contents: read
@@ -1259,6 +1264,7 @@ jobs:
             echo "$chart: all $declared declared test suites ran"
           done
   openai-sdk-compat:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     name: OpenAI ${{ matrix.openai-version }} compatibility
     permissions:
       contents: read
@@ -1330,7 +1336,7 @@ jobs:
   redis-compat:
     name: redis-py ${{ matrix.redis-py }} compatibility
     needs: rust-bridge
-    if: ${{ !cancelled() }}
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm')) && (!cancelled())
     permissions:
       contents: read
       id-token: write
@@ -1438,7 +1444,7 @@ jobs:
   coverage:
     name: coverage
     needs: unit
-    if: always() && github.event.repository.fork != true
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm')) && always()
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -1494,7 +1500,7 @@ jobs:
     name: unit passed
     permissions: {}
     needs: [rust-bridge, assert-shard-coverage, unit, ui-unit, docs, helm, openai-sdk-compat, redis-compat]
-    if: always()
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm')) && always()
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:

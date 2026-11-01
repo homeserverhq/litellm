@@ -23,6 +23,7 @@ concurrency:
 
 jobs:
   vscode-extension:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:

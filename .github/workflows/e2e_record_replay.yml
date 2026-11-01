@@ -116,6 +116,7 @@ jobs:
   replay:
     name: "Replay the e2e suite from the pinned bundle with zero egress"
     if: >-
+      github.event.repository.fork != true &&
       (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm') &&
       (github.event.schedule == '0 8 * * 1-5' ||
        (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'replay'))

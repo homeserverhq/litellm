@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   check-sync:
+    if: github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm')
     name: Verify schema.prisma copies match root
     runs-on: ubuntu-latest
     timeout-minutes: 5

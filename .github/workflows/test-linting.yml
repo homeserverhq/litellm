@@ -1,6 +1,9 @@
 name: lint
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
@@ -15,6 +18,7 @@ concurrency:
 
 jobs:
   python:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     name: python
     permissions:
       contents: read
@@ -35,7 +39,7 @@ jobs:
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
           clean: true
           persist-credentials: false
@@ -48,8 +52,8 @@ jobs:
         if: steps.changes.outputs.decision != 'skip'
         env:
           GH_TOKEN: ${{ github.token }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           retry() { "$@" || { sleep 15; "$@"; } || { sleep 30; "$@"; }; }
           MERGE_BASE=$(retry gh api "repos/${{ github.repository }}/compare/${BASE_SHA}...${HEAD_SHA}?per_page=1" --jq '.merge_base_commit.sha')
@@ -225,6 +229,7 @@ jobs:
         run: |
           uv run --no-sync python -c "from litellm import *" || (echo '🚨 import failed, this means you introduced unprotected imports! 🚨'; exit 1)
   secret-scan:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -262,6 +267,7 @@ jobs:
             echo "GITGUARDIAN_API_KEY not set, skipping ggshield scan"
           fi
   ui:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     name: ui
     permissions:
       contents: read
@@ -282,8 +288,8 @@ jobs:
         id: changed
         env:
           GH_TOKEN: ${{ github.token }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           # base.sha is the base branch tip from when the PR was opened, while
           # actions/checkout leaves HEAD on a merge of the PR into the *current*
@@ -355,6 +361,7 @@ jobs:
         if: ${{ !cancelled() && steps.changed.outputs.has_files == 'true' }}
         run: npm run knip:ci
   ui-api-types:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     name: ui-api-types
     permissions:
       contents: read
@@ -475,6 +482,7 @@ jobs:
           fi
           echo "schema.d.ts is in sync with the proxy OpenAPI spec."
   code-quality:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     name: code-quality
     permissions:
       contents: read
@@ -643,6 +651,7 @@ jobs:
       - name: documentation_test_api_docs
         run: uv run --no-sync python ./tests/documentation_tests/test_api_docs.py
   ci-coverage:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     name: ci-coverage
     permissions:
       contents: read
@@ -669,6 +678,7 @@ jobs:
       - name: Assert .github/workflows/ holds only workflows, correctly named
         run: python .github/scripts/assert_workflow_dir_hygiene.py
   semgrep:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     name: semgrep
     permissions:
       contents: read
@@ -694,7 +704,7 @@ jobs:
   lint-passed:
     name: lint passed
     needs: [python, secret-scan, ui, ui-api-types, code-quality, ci-coverage, semgrep]
-    if: always()
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm')) && always()
     runs-on: ubuntu-latest
     timeout-minutes: 2
     permissions: {}

@@ -22,6 +22,7 @@ concurrency:
 
 jobs:
   mutation:
+    if: github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm')
     name: Run mutmut
     runs-on: ubuntu-latest
     # Whole-folder mutation against ~15 files / ~7.5k LOC can take hours.

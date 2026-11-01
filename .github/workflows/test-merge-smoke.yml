@@ -1,6 +1,9 @@
 name: smoke
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches: [main, litellm_internal_staging, litellm_oss_staging, "litellm_**"]
   workflow_dispatch:
@@ -14,6 +17,7 @@ concurrency:
 
 jobs:
   dashboard-build:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     name: dashboard-build
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -27,6 +31,7 @@ jobs:
         run: docker build --target ui-builder -f Dockerfile .
 
   core-checks:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     name: py${{ matrix.python-version }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -92,6 +97,7 @@ jobs:
         run: sudo ip netns delete smoke
 
   all-extras:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     name: all-extras-py${{ matrix.python-version }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -124,6 +130,7 @@ jobs:
         run: .venv/bin/python -c "import litellm, litellm.proxy.proxy_server"
 
   windows-sdk:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     name: windows-sdk
     runs-on: windows-2025
     timeout-minutes: 10
@@ -155,6 +162,7 @@ jobs:
         run: uv run --no-sync python -m pytest --tb=short -v tests/windows_tests
 
   proxy-build-from-pip:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     name: proxy-build-from-pip
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -266,7 +274,7 @@ jobs:
   smoke-passed:
     name: smoke passed
     needs: [dashboard-build, core-checks, all-extras, windows-sdk, proxy-build-from-pip]
-    if: always()
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm')) && always()
     runs-on: ubuntu-latest
     timeout-minutes: 2
     permissions: {}

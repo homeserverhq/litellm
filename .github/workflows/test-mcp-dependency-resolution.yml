@@ -1,6 +1,9 @@
 name: LiteLLM MCP Dependency Resolution
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
@@ -40,6 +43,7 @@ concurrency:
 
 jobs:
   resolve:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     runs-on: ubuntu-latest
     timeout-minutes: 25
     strategy:
@@ -121,6 +125,7 @@ jobs:
           done
 
   core-distribution:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     permissions:
       contents: read
       id-token: write

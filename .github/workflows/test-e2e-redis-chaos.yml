@@ -1,6 +1,9 @@
 name: "Redis Chaos E2E"
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
   workflow_call:
     inputs:
@@ -14,6 +17,7 @@ permissions:
 
 jobs:
   redis-chaos-e2e:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     runs-on: ${{ (github.event.repository.fork && 'ubuntu-latest') || 'ubuntu-latest-16-cores' }}
     timeout-minutes: 30
     services:

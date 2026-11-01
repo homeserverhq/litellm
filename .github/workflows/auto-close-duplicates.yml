@@ -23,7 +23,7 @@ permissions: {}
 
 jobs:
   sweep-tests:
-    if: github.event_name == 'pull_request'
+    if: github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm') && (github.event_name == 'pull_request')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

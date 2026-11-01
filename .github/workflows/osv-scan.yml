@@ -1,6 +1,15 @@
 name: OSV Scan
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - uv.lock
+      - ui/litellm-dashboard/package-lock.json
+      - vscode-extension/package-lock.json
+      - osv-scanner.toml
+      - .github/workflows/osv-scan.yml
   pull_request:
     branches:
       - main
@@ -17,6 +26,7 @@ concurrency:
 
 jobs:
   osv-scan:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     name: osv-scan
     runs-on: ubuntu-latest
     timeout-minutes: 10

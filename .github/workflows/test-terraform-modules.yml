@@ -24,6 +24,7 @@ concurrency:
 
 jobs:
   module:
+    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm'))
     name: fmt, validate, test (${{ matrix.module }})
     runs-on: ubuntu-latest
     timeout-minutes: 15
