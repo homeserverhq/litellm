@@ -1,14 +1,9 @@
 name: unit
 
 on:
-  pull_request:
-    branches:
-      - main
-      - "litellm_**"
   push:
     branches:
       - main
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -1500,7 +1495,7 @@ jobs:
     name: unit passed
     permissions: {}
     needs: [rust-bridge, assert-shard-coverage, unit, ui-unit, docs, helm, openai-sdk-compat, redis-compat]
-    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm')) && always()
+    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:

@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches: [main, litellm_internal_staging, litellm_oss_staging, "litellm_**"]
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -274,7 +271,7 @@ jobs:
   smoke-passed:
     name: smoke passed
     needs: [dashboard-build, core-checks, all-extras, windows-sdk, proxy-build-from-pip]
-    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm')) && always()
+    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 2
     permissions: {}

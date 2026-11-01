@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
-      - "litellm_**"
 
 permissions:
   contents: read
@@ -704,7 +700,7 @@ jobs:
   lint-passed:
     name: lint passed
     needs: [python, secret-scan, ui, ui-api-types, code-quality, ci-coverage, semgrep]
-    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm')) && always()
+    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 2
     permissions: {}

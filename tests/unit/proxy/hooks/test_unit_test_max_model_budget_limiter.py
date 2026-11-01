@@ -970,8 +970,9 @@ async def test_user_model_budget_window_resets_when_the_period_elapses():
         )
 
     # Age the window past its period. The next charge opens a new window rather
-    # than adding to the exhausted one.
-    elapsed = duration_in_seconds("1mo") + 60
+    # than adding to the exhausted one. Two periods is unambiguous even when the
+    # month the window started in is longer than the current one.
+    elapsed = 2 * duration_in_seconds("1mo")
     await dual_cache.async_set_cache(
         key=start_time_key,
         value=datetime.now(timezone.utc).timestamp() - elapsed,
