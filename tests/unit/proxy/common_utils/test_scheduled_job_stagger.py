@@ -3,6 +3,7 @@ import logging
 import os
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
+from zoneinfo import ZoneInfo
 
 import pytest
 from apscheduler.executors.asyncio import AsyncIOExecutor
@@ -309,3 +310,23 @@ def test_job_timing_is_logged_with_scheduled_and_actual_start(caplog):
     assert f"scheduled_run_time={scheduled.isoformat()}" in message
     assert "actual_start_time=" in message
     assert "delay=2." in message
+
+
+def test_a_staggered_job_keeps_firing_forward_across_the_dst_fold():
+    """Wall-clock offset math crossed the fold and put the next fire an hour in the past"""
+    chicago = ZoneInfo("America/Chicago")
+    fired_at = datetime(2026, 11, 1, 1, 0, tzinfo=chicago, fold=1)
+    base = IntervalTrigger(seconds=60, start_date=datetime(2026, 11, 1, 0, 0, tzinfo=chicago))
+    staggered = stagger_trigger(
+        job_id="periodic_reload_job",
+        trigger=base,
+        period_seconds=60,
+        settings=_settings(offsets={"periodic_reload_job": 30}),
+        identity="pod-a:1",
+    )
+
+    fires = _fire_times(staggered, fired_at, 2)
+    assert tuple(fire.astimezone(timezone.utc) for fire in fires) == (
+        datetime(2026, 11, 1, 7, 0, 30, tzinfo=timezone.utc),
+        datetime(2026, 11, 1, 7, 1, 30, tzinfo=timezone.utc),
+    )
