@@ -1439,7 +1439,7 @@ jobs:
   coverage:
     name: coverage
     needs: unit
-    if: github.event_name == 'push' || (github.event.repository.fork != true && (github.event_name != 'schedule' || github.repository == 'BerriAI/litellm')) && always()
+    if: github.event.repository.fork != true && always()
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

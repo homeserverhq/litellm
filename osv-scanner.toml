@@ -1,27 +1,39 @@
-[[IgnoredVulns]]
-id = "GHSA-w8v5-vhqr-4h9v"
-ignoreUntil = 2026-11-01
+[[PackageOverrides]]
+name = "diskcache"
+version = "5.6.3"
+ecosystem = "PyPI"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-31
 reason = "diskcache has no fixed release published; remove this entry once one exists"
 
-[[IgnoredVulns]]
-id = "GHSA-v4x8-3wr5-3wq8"
-ignoreUntil = 2026-11-20
-reason = "the lock's Python 3.10 resolution stays on filelock 3.32.7 because the only fix, 4.2.1, is a new major that requires Python >= 3.11, and this advisory is in ReadWriteLock, which litellm never uses (only FileLock); Python 3.11+ resolves 4.2.4 via the uv overrides, so remove this once 3.10 is dropped"
+[[PackageOverrides]]
+name = "dnspython"
+version = "2.8.0"
+ecosystem = "PyPI"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-31
+reason = "dnspython 2.9.0 requires Python >= 3.11, so the Python 3.10 resolution stays on 2.8.0; 3.11+ is on 2.9.0"
 
-[[IgnoredVulns]]
-id = "GHSA-567q-5qvw-pf92"
-ignoreUntil = 2026-11-20
-reason = "Windows-only soft locks, including a FileLock that fell back to a soft lock, while litellm's CLI uses FileLock on local per-user paths where the OS lock primitive is available; the Python 3.10 resolution cannot take the 4.2.1 fix because it requires Python >= 3.11, and Python 3.11+ resolves 4.2.4 via the uv overrides"
-
-[[IgnoredVulns]]
-id = "GHSA-9vhv-jxww-xfm5"
-ignoreUntil = 2026-11-20
-reason = "ReadWriteLock and AsyncReadWriteLock only, which litellm never uses; the Python 3.10 resolution cannot take the 4.2.1 fix because it requires Python >= 3.11, and Python 3.11+ resolves 4.2.4 via the uv overrides"
+[[PackageOverrides]]
+name = "filelock"
+version = "3.32.7"
+ecosystem = "PyPI"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-31
+reason = "the Python 3.10 resolution cannot take 4.2.1, which requires Python >= 3.11, and litellm only uses FileLock, not ReadWriteLock or AsyncReadWriteLock; Python 3.11+ resolves 4.2.4"
 
 [[PackageOverrides]]
 name = "pillow"
 version = "12.3.0"
 ecosystem = "PyPI"
 vulnerability.ignore = true
-effectiveUntil = 2026-10-27
+effectiveUntil = 2026-12-31
 reason = "pillow 13.0.0 requires Python >= 3.11, so the Python 3.10 resolution of the ci and dev groups stays on 12.3.0; 3.11+ is on 13.0.0"
+
+[[PackageOverrides]]
+name = "tornado"
+version = "6.5.10"
+ecosystem = "PyPI"
+vulnerability.ignore = true
+effectiveUntil = 2026-12-31
+reason = "tornado 6.6 requires Python >= 3.11, so the Python 3.10 resolution stays on 6.5.10; 3.11+ is on 6.6"
